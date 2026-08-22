@@ -36,22 +36,23 @@ GROQ_API_KEY=your_groq_api_key_here
 
 *(Get a free Groq API key from https://console.groq.com/keys)*
 
-### 4. Run the Web Application
-
-```bash
-streamlit run app.py
-```
-
-> Or double-click **`run_app.bat`** on Windows.  
-> Open http://localhost:8501 in your browser.
-
-### 5. Run the REST API Backend
+### 4. Run the Production Web Application (FastAPI + Modern SPA)
 
 ```bash
 uvicorn api:app --reload --port 8000
 ```
 
-> Interactive Swagger documentation available at http://localhost:8000/docs
+> Or double-click **`run_app.bat`** on Windows.  
+> Open http://localhost:8000 in your browser for the full clinical web application.  
+> Interactive Swagger API documentation available at http://localhost:8000/docs.
+
+### 5. (Alternative) Run Streamlit Interface
+
+```bash
+streamlit run app.py
+```
+
+> Open http://localhost:8501 for the Python-only prototype interface.
 
 ---
 

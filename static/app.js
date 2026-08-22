@@ -380,8 +380,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
             <h4 style="color: #f1f5f9; font-size: 0.9rem; margin-bottom: 8px;">Personalized Clinical Pathway (Guideline-Grounded)</h4>
             ${stepsHtml}
+
+            <div style="margin-top: 16px;">
+                <button class="btn btn-primary" style="width: 100%; font-weight: 700; padding: 10px;" id="btnDownloadCasePdf">
+                    📥 Download Official Clinical SOAP Report (PDF)
+                </button>
+            </div>
         `;
+
+        const btnDl = document.getElementById('btnDownloadCasePdf');
+        if (btnDl) {
+            btnDl.addEventListener('click', () => {
+                const age = parseInt(document.getElementById('caseAge').value) || 62;
+                const sex = document.getElementById('caseSex').value === 'female';
+                const sys = parseInt(document.getElementById('caseSystolic').value) || 155;
+                const dia = parseInt(document.getElementById('caseDiastolic').value) || 95;
+                const scr = parseFloat(document.getElementById('caseCreatinine').value) || null;
+                const weight = parseFloat(document.getElementById('caseWeight').value) || null;
+                const dm = document.getElementById('caseDiabetes').checked;
+                const cvd = document.getElementById('caseCvd').checked;
+                const ckd = document.getElementById('caseCkd').checked;
+                const smoker = document.getElementById('caseSmoker').checked;
+                const meds = Array.from(document.querySelectorAll('#caseMedications input:checked')).map(c => c.value);
+
+                window.downloadSoapPdf(age, sex, sys, dia, scr, weight, dm, cvd, ckd, smoker, meds);
+            });
+        }
     }
+
+    window.downloadSoapPdf = async function(age, isFemale, sbp, dbp, scr, weight, dm, cvd, ckd, smoker, meds) {
+        try {
+            const res = await fetch('/expert/export-soap-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    age: age,
+                    is_female: isFemale,
+                    systolic_bp: sbp,
+                    diastolic_bp: dbp,
+                    serum_creatinine_mg_dl: scr,
+                    weight_kg: weight,
+                    has_diabetes: dm,
+                    has_cvd: cvd,
+                    has_ckd: ckd,
+                    is_smoker: smoker,
+                    current_medications: meds
+                })
+            });
+            if (!res.ok) throw new Error("PDF generation failed");
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Clinical_SOAP_Report_Age${age}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert("PDF Download Error: " + e.message);
+        }
+    };
 
     // --- FEATURE 2: DRUG INTERACTION MATRIX ---
     const btnCheckDDI = document.getElementById('btnCheckDDI');
@@ -476,7 +533,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPatientGuide(data) {
         const out = document.getElementById('guideResultBody');
         const printBtn = document.getElementById('btnPrintLeaflet');
-        if (printBtn) printBtn.style.display = 'inline-flex';
+        if (printBtn) {
+            printBtn.style.display = 'inline-flex';
+            printBtn.onclick = () => {
+                const cond = document.getElementById('guideCondition').value || "Stage 2 Essential Hypertension";
+                const target = document.getElementById('guideTarget').value || "< 130/80 mmHg";
+                const lang = document.getElementById('guideLang').value || "Arabic";
+                window.downloadPatientGuidePdf(cond, target, lang);
+            };
+        }
 
         const isAr = data.language === 'Arabic';
         const dir = isAr ? 'rtl' : 'ltr';
@@ -504,9 +569,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     </ul>
                     <div style="font-size: 0.8rem; font-weight: 700; color: #ffffff;">${escapeHtml(data.emergency_action)}</div>
                 </div>
+
+                <div style="margin-top: 16px; text-align: center;">
+                    <button class="btn btn-primary" style="font-weight: 700; padding: 8px 18px;" onclick="window.downloadPatientGuidePdf('${escapeHtml(document.getElementById('guideCondition').value)}', '${escapeHtml(document.getElementById('guideTarget').value)}', '${escapeHtml(data.language)}')">
+                        📥 Download Patient Guide (PDF)
+                    </button>
+                </div>
             </div>
         `;
     }
+
+    window.downloadPatientGuidePdf = async function(cond, target, lang) {
+        try {
+            const res = await fetch('/expert/export-patient-guide-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ condition_name: cond, target_bp: target, language: lang })
+            });
+            if (!res.ok) throw new Error("PDF generation failed");
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Patient_Discharge_Guide_${lang}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert("PDF Download Error: " + e.message);
+        }
+    };
 
     // --- FEATURE 4: MULTI-GUIDELINE COMPARISON MATRIX ---
     async function loadGuidelineComparison() {
