@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  medirag-web:
+    build: .
+    container_name: medirag_web
+    ports:
+      - "8501:8501"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=llama-3.3-70b-versatile
+      - DEFAULT_LLM_PROVIDER=groq
+      - CHROMA_DIR=/app/chroma_db
+      - DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+      - ./chroma_db:/app/chroma_db
+    restart: unless-stopped
+    command: ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+  medirag-api:
+    build: .
+    container_name: medirag_api
+    ports:
+      - "8000:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_MODEL=llama-3.3-70b-versatile
+      - DEFAULT_LLM_PROVIDER=groq
+      - CHROMA_DIR=/app/chroma_db
+      - DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+      - ./chroma_db:/app/chroma_db
+    restart: unless-stopped
+    command: ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]

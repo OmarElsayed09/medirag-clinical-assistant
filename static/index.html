@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediRAG | Evidence-Based Clinical Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-theme">
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand-logo">
+                    <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    <div class="brand-text">
+                        <span class="brand-name">MediRAG</span>
+                        <span class="brand-tag">CLINICAL AI</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="assistant">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span>Clinical Assistant</span>
+                </button>
+                <button class="nav-item" data-tab="case-analyzer">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                        <path d="M9 12h6M9 16h6"/>
+                    </svg>
+                    <span>Case & SOAP Analyzer</span>
+                </button>
+                <button class="nav-item" data-tab="ddi">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/>
+                        <path d="m8.5 8.5 7 7"/>
+                    </svg>
+                    <span>Drug Interaction Matrix</span>
+                </button>
+                <button class="nav-item" data-tab="patient-guide">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    <span>Patient Education Guide</span>
+                </button>
+                <button class="nav-item" data-tab="comparison">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    <span>Guideline Consensus</span>
+                </button>
+                <button class="nav-item" data-tab="tools">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    <span>Calculators</span>
+                </button>
+                <button class="nav-item" data-tab="eval">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    <span>Evaluation Suite</span>
+                </button>
+                <button class="nav-item" data-tab="repository">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                    <span>Guidelines Corpus</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="engine-config-card">
+                    <div class="config-header">
+                        <span class="config-title">ENGINE ARCHITECTURE</span>
+                    </div>
+                    <div class="config-field">
+                        <label>LLM Provider</label>
+                        <select id="settingProvider">
+                            <option value="groq" selected>Groq LPU (Ultra-Fast)</option>
+                            <option value="gemini">Google Gemini 1.5</option>
+                            <option value="ollama">Ollama Local</option>
+                        </select>
+                    </div>
+                    <div class="config-field">
+                        <label>Inference Model</label>
+                        <select id="settingModel">
+                            <option value="llama-3.3-70b-versatile" selected>llama-3.3-70b-versatile</option>
+                            <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
+                            <option value="qwen/qwen3.6-27b">qwen/qwen3.6-27b</option>
+                            <option value="mixtral-8x7b-32768">mixtral-8x7b-32768</option>
+                        </select>
+                    </div>
+                    <div class="config-field">
+                        <label>Groq API Key</label>
+                        <input type="password" id="settingApiKey" placeholder="gsk_... (leave empty for .env)">
+                    </div>
+                    <div class="system-status-indicator">
+                        <span class="status-dot"></span>
+                        <span class="status-text" id="systemStatusText">449 Vectors | Zero-Hallucination</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Viewport -->
+        <main class="main-viewport">
+            <!-- Top Navbar -->
+            <header class="top-navbar">
+                <div class="nav-breadcrumbs">
+                    <span class="breadcrumb-root">MediRAG</span>
+                    <span class="breadcrumb-sep">/</span>
+                    <span class="breadcrumb-active" id="activeViewTitle">Clinical Assistant</span>
+                </div>
+                <div class="nav-actions">
+                    <div class="spec-pill">
+                        <span class="pill-dot"></span>
+                        <span>Grounding: Closed-Domain (Temp 0.0)</span>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btnExportReport">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        Export Report
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="btnClearChat">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Clear
+                    </button>
+                </div>
+            </header>
+
+            <!-- TAB 1: CLINICAL ASSISTANT -->
+            <section class="tab-pane active" id="view-assistant">
+                <div class="chat-viewport">
+                    <div class="inquiry-pills-bar">
+                        <span class="pills-label">Quick Inquiries:</span>
+                        <button class="inquiry-pill" data-query="What are the recommended first-line pharmacological treatment classes for hypertension in adults according to the guidelines?">First-Line Regimens</button>
+                        <button class="inquiry-pill" data-query="What are the recommended target blood pressure thresholds for adults with hypertension and cardiovascular comorbidities?">Target BP Goals</button>
+                        <button class="inquiry-pill" data-query="What are the clinical contraindications and safety monitoring requirements for ACE inhibitors and ARBs?">Contraindications</button>
+                        <button class="inquiry-pill" data-query="What is the recommended pediatric surgical dosage of aspirin for acute appendicitis?">Negative Refusal Test</button>
+                    </div>
+
+                    <div class="messages-stream" id="messagesContainer">
+                        <div class="message-card system-welcome">
+                            <div class="message-header">
+                                <div class="avatar-badge assistant">AI</div>
+                                <div class="sender-name">MediRAG Clinical Assistant</div>
+                                <div class="timestamp">Ready</div>
+                            </div>
+                            <div class="message-body">
+                                <p>Welcome to MediRAG. I answer clinical questions strictly from official medical guidelines (WHO 2021, NICE NG136) with zero hallucination, verifiable page-level citations, and automated safety screening.</p>
+                                <div class="disclaimer-banner">
+                                    <strong>Medical Disclaimer:</strong> This system is for clinical reference and educational purposes only, based strictly on indexed guidelines.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-bar">
+                        <form id="chatForm" class="chat-form">
+                            <input type="text" id="chatInput" placeholder="Ask a clinical question from the medical guidelines..." autocomplete="off">
+                            <button type="submit" class="btn btn-primary" id="btnSend">
+                                <span>Send</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-icon">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: PATIENT CASE & SOAP ANALYZER -->
+            <section class="tab-pane" id="view-case-analyzer">
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-title-group">
+                                <h3>Patient Clinical Case Input</h3>
+                                <span class="tool-subtitle">Comprehensive Clinical Demographics, Vitals & History</span>
+                            </div>
+                        </div>
+                        <div class="tool-body">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Patient Age (Years)</label>
+                                    <input type="number" id="caseAge" value="62" min="18" max="110">
+                                </div>
+                                <div class="form-group">
+                                    <label>Biological Sex</label>
+                                    <select id="caseSex">
+                                        <option value="male" selected>Male</option>
+                                        <option value="female">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Systolic BP (mmHg)</label>
+                                    <input type="number" id="caseSys" value="158" min="70" max="260">
+                                </div>
+                                <div class="form-group">
+                                    <label>Diastolic BP (mmHg)</label>
+                                    <input type="number" id="caseDia" value="96" min="40" max="160">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Serum Creatinine (mg/dL)</label>
+                                    <input type="number" id="caseScr" value="1.3" step="0.1" min="0.2" max="15.0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Weight (kg)</label>
+                                    <input type="number" id="caseWeight" value="78" min="30" max="250">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Comorbidities & Risk Factors</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" id="caseDiabetes" checked> Diabetes Mellitus</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="caseCVD"> Established Cardiovascular Disease</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="caseCKD"> Known Chronic Kidney Disease</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="caseSmoker"> Current Tobacco Smoker</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Current Antihypertensive Regimen</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" name="caseMed" value="ace_inhibitor" checked> ACE Inhibitor (e.g. Lisinopril)</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="caseMed" value="spironolactone" checked> Spironolactone / MRA</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="caseMed" value="ccb"> Dihydropyridine CCB (Amlodipine)</label>
+                                    <label class="checkbox-label"><input type="checkbox" name="caseMed" value="nsaid"> Chronic NSAID (Ibuprofen/Naproxen)</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-block" id="btnAnalyzeCase">Synthesize Clinical Case & SOAP Note</button>
+                        </div>
+                    </div>
+
+                    <!-- Output Area -->
+                    <div class="tool-card" id="caseOutputCard">
+                        <div class="tool-header">
+                            <div class="tool-title-group">
+                                <h3>Synthesized SOAP Note & Clinical Pathway</h3>
+                                <span class="tool-subtitle">Guideline-grounded Clinical Assessment</span>
+                            </div>
+                        </div>
+                        <div class="tool-body" id="caseResultBody">
+                            <div style="color: #64748b; font-style: italic; text-align: center; padding: 40px 0;">
+                                Enter patient clinical data on the left and click "Synthesize Clinical Case" to generate the evidence-grounded SOAP note and treatment pathway.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: DRUG INTERACTION MATRIX -->
+            <section class="tab-pane" id="view-ddi">
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-title-group">
+                                <h3>Select Medication Regimen</h3>
+                                <span class="tool-subtitle">Screen combinations across antihypertensive & cardio-renal drug classes</span>
+                            </div>
+                        </div>
+                        <div class="tool-body">
+                            <div class="form-group">
+                                <label>Select All Active Medications:</label>
+                                <div class="checkbox-group" id="ddiChecklist">
+                                    <label class="checkbox-label"><input type="checkbox" value="ace_inhibitor" checked> ACE Inhibitor (Lisinopril, Enalapril, Ramipril)</label>
+                                    <label class="checkbox-label"><input type="checkbox" value="arb"> ARB (Losartan, Valsartan, Candesartan)</label>
+                                    <label class="checkbox-label"><input type="checkbox" value="spironolactone" checked> Potassium-Sparing / MRA (Spironolactone, Eplerenone)</label>
+                                    <label class="checkbox-label"><input type="checkbox" value="beta_blocker"> Beta Blocker (Bisoprolol, Metoprolol, Atenolol)</label>
+                                    <label class="checkbox-label"><input type="checkbox" value="verapamil_diltiazem"> Non-Dihydropyridine CCB (Verapamil, Diltiazem)</label>
+                                    <label class="checkbox-label"><input type="checkbox" value="thiazide_diuretic"> Thiazide / Thiazide-like Diuretic (Indapamide, Chlorthalidone)</label>
+                                    <label class="checkbox-label"><input type="checkbox" value="nsaid" checked> NSAID Analgesic (Ibuprofen, Naproxen, Diclofenac)</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-block" id="btnCheckDDI">Audit Medication Interactions</button>
+                        </div>
+                    </div>
+
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-title-group">
+                                <h3>Interaction Analysis & Clinical Actions</h3>
+                                <span class="tool-subtitle">Evidence-based safety warnings and monitoring protocols</span>
+                            </div>
+                        </div>
+                        <div class="tool-body" id="ddiResultBody">
+                            <div style="color: #64748b; font-style: italic; text-align: center; padding: 40px 0;">
+                                Select medications and click "Audit Medication Interactions" to perform safety evaluation.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: PATIENT EDUCATION LEAFLET GENERATOR -->
+            <section class="tab-pane" id="view-patient-guide">
+                <div class="tools-grid">
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-title-group">
+                                <h3>Patient Guide Settings</h3>
+                                <span class="tool-subtitle">Customize plain-language discharge & education leaflet</span>
+                            </div>
+                        </div>
+                        <div class="tool-body">
+                            <div class="form-group">
+                                <label>Clinical Condition / Diagnosis</label>
+                                <input type="text" id="guideCondition" value="Stage 2 Hypertension (High Blood Pressure)">
+                            </div>
+                            <div class="form-group">
+                                <label>Target Blood Pressure Goal</label>
+                                <input type="text" id="guideTarget" value="< 130/80 mmHg">
+                            </div>
+                            <div class="form-group">
+                                <label>Leaflet Language</label>
+                                <select id="guideLang">
+                                    <option value="Arabic" selected>Arabic (اللغة العربية)</option>
+                                    <option value="English">English</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary btn-block" id="btnGenGuide">Generate Patient Leaflet</button>
+                        </div>
+                    </div>
+
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-title-group">
+                                <h3>Patient Leaflet Preview (Printable)</h3>
+                                <span class="tool-subtitle">Plain-language medical instructions & lifestyle rules</span>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" id="btnPrintLeaflet" style="display: none;" onclick="window.print()">Print Leaflet</button>
+                        </div>
+                        <div class="tool-body" id="guideResultBody">
+                            <div style="color: #64748b; font-style: italic; text-align: center; padding: 40px 0;">
+                                Click "Generate Patient Leaflet" to produce a clear patient instructions sheet.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: GUIDELINES CONSENSUS -->
+            <section class="tab-pane" id="view-comparison">
+                <div class="eval-dashboard">
+                    <div class="eval-hero-card">
+                        <div class="eval-hero-text">
+                            <h3>Multi-Guideline Consensus & Divergence Matrix</h3>
+                            <p>Side-by-side comparison across WHO (2021), NICE NG136, and ACC/AHA (2017) clinical guidelines.</p>
+                        </div>
+                    </div>
+
+                    <div class="audit-table-card">
+                        <div class="table-responsive">
+                            <table class="data-table" id="consensusTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 20%;">Clinical Domain</th>
+                                        <th style="width: 25%;">WHO (2021) Guideline</th>
+                                        <th style="width: 25%;">NICE NG136 Guideline</th>
+                                        <th style="width: 30%;">Consensus & Synthesis</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="consensusTableBody">
+                                    <!-- Dynamic rows loaded via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: CLINICAL CALCULATORS -->
+            <section class="tab-pane" id="view-tools">
+                <div class="tools-grid">
+                    <!-- Tool 1: BP Staging & Management -->
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-title-group">
+                                <h3>Blood Pressure Staging</h3>
+                                <span class="tool-subtitle">WHO 2021 & ACC/AHA 2017 Guidelines</span>
+                            </div>
+                        </div>
+                        <div class="tool-body">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Systolic (mmHg)</label>
+                                    <input type="number" id="bpSystolic" value="155" min="70" max="260">
+                                </div>
+                                <div class="form-group">
+                                    <label>Diastolic (mmHg)</label>
+                                    <input type="number" id="bpDiastolic" value="95" min="40" max="160">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Comorbidities</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label"><input type="checkbox" id="bpDiabetes"> Diabetes Mellitus</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="bpCVD"> Established CVD</label>
+                                    <label class="checkbox-label"><input type="checkbox" id="bpCKD"> Chronic Kidney Disease</label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-block" id="btnCalcBP">Evaluate Staging</button>
+
+                            <div class="tool-result-box" id="bpResultBox" style="display: none;">
+                                <div class="result-header">
+                                    <span class="result-stage" id="bpStageText">Stage 1 Hypertension</span>
+                                    <span class="severity-badge" id="bpSeverityBadge">Moderate Tier</span>
+                                </div>
+                                <div class="result-detail">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Target Goal</span>
+                                        <strong class="detail-val" id="bpTargetText">&lt; 140/90 mmHg</strong>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Strategy</span>
+                                        <span id="bpStrategyText">Monotherapy or low-dose dual combination</span>
+                                    </div>
+                                </div>
+                                <div class="result-recommendation" id="bpRecText">
+                                    Initiate pharmacological treatment if cardiovascular risk is high.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tool 2: Renal Function -->
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-title-group">
+                                <h3>Renal Function Calculator</h3>
+                                <span class="tool-subtitle">CKD-EPI 2021 & Cockcroft-Gault CrCl</span>
+                            </div>
+                        </div>
+                        <div class="tool-body">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Creatinine (mg/dL)</label>
+                                    <input type="number" id="renalScr" value="1.4" step="0.1" min="0.2" max="15.0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Age (Years)</label>
+                                    <input type="number" id="renalAge" value="65" min="18" max="110">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Sex</label>
+                                    <select id="renalSex">
+                                        <option value="male" selected>Male</option>
+                                        <option value="female">Female</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Weight (kg)</label>
+                                    <input type="number" id="renalWeight" value="75" min="30" max="250">
+                                </div>
+                            </div>
+                            <button class="btn btn-primary btn-block" id="btnCalcRenal">Calculate Renal Clearance</button>
+
+                            <div class="tool-result-box" id="renalResultBox" style="display: none;">
+                                <div class="result-header">
+                                    <span class="result-stage" id="renalKdigoText">KDIGO Stage G2</span>
+                                    <span class="severity-badge" id="renalRiskBadge">Mild Risk</span>
+                                </div>
+                                <div class="metrics-pair-grid">
+                                    <div class="metric-mini-tile">
+                                        <span class="label">eGFR (CKD-EPI)</span>
+                                        <span class="val" id="renalEgfrVal">69.2</span>
+                                        <span class="unit">mL/min/1.73m²</span>
+                                    </div>
+                                    <div class="metric-mini-tile">
+                                        <span class="label">CrCl (Cockcroft-Gault)</span>
+                                        <span class="val" id="renalCrclVal">69.4</span>
+                                        <span class="unit">mL/min</span>
+                                    </div>
+                                </div>
+                                <div class="precautions-list" id="renalPrecautionsList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 7: EVALUATION -->
+            <section class="tab-pane" id="view-eval">
+                <div class="eval-dashboard">
+                    <div class="eval-hero-card">
+                        <div class="eval-hero-text">
+                            <h3>RAG Triad & Clinical Safety Benchmark Suite</h3>
+                            <p>Measures Zero-Hallucination Faithfulness, Retrieval Context Relevance, Hit Rate (Recall@K), and Negative Refusal Safety.</p>
+                        </div>
+                        <button class="btn btn-primary" id="btnRunBenchmark">Run Live Benchmark</button>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-title">Faithfulness</div>
+                            <div class="kpi-val" id="kpiFaithfulness">95.0%</div>
+                            <div class="kpi-caption">Zero-Hallucination</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-title">Context Relevance</div>
+                            <div class="kpi-val" id="kpiContextRel">86.7%</div>
+                            <div class="kpi-caption">Hybrid Search Precision</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-title">Retrieval Hit Rate</div>
+                            <div class="kpi-val" id="kpiHitRate">100%</div>
+                            <div class="kpi-caption">Recall@K Top Chunks</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-title">Safety Refusal</div>
+                            <div class="kpi-val" id="kpiSafetyRefusal">100%</div>
+                            <div class="kpi-caption">Out-of-Scope Negative Queries</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-title">Mean Latency</div>
+                            <div class="kpi-val" id="kpiLatency">0.82s</div>
+                            <div class="kpi-caption">Groq LPU Inference</div>
+                        </div>
+                    </div>
+
+                    <div class="audit-table-card">
+                        <h4>Per-Query Evaluation Audit</h4>
+                        <div class="table-responsive">
+                            <table class="data-table" id="auditTable">
+                                <thead>
+                                    <tr>
+                                        <th>Test ID</th>
+                                        <th>Category</th>
+                                        <th>Language</th>
+                                        <th>Faithfulness</th>
+                                        <th>Context Rel.</th>
+                                        <th>Citations</th>
+                                        <th>Latency</th>
+                                        <th>Safety Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="auditTableBody">
+                                    <tr>
+                                        <td><code>Q1_HYPERTENSION_FIRSTLINE</code></td>
+                                        <td>In-Domain Clinical</td>
+                                        <td>English</td>
+                                        <td><span class="badge-success">95.0%</span></td>
+                                        <td><span class="badge-success">100%</span></td>
+                                        <td>3</td>
+                                        <td>0.78s</td>
+                                        <td><span class="badge-success">PASSED</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Q2_HYPERTENSION_TARGETS</code></td>
+                                        <td>In-Domain Clinical</td>
+                                        <td>English</td>
+                                        <td><span class="badge-success">95.0%</span></td>
+                                        <td><span class="badge-success">85.0%</span></td>
+                                        <td>2</td>
+                                        <td>0.81s</td>
+                                        <td><span class="badge-success">PASSED</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>Q4_OUT_OF_SCOPE_APPENDICITIS</code></td>
+                                        <td>Negative Safety Test</td>
+                                        <td>English</td>
+                                        <td><span class="badge-success">100.0%</span></td>
+                                        <td><span class="badge-neutral">N/A</span></td>
+                                        <td>0</td>
+                                        <td>0.62s</td>
+                                        <td><span class="badge-success">REFUSAL PASSED</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 8: GUIDELINES CORPUS -->
+            <section class="tab-pane" id="view-repository">
+                <div class="repo-view">
+                    <div class="repo-header-card">
+                        <div class="repo-info">
+                            <h3>Indexed Medical Guidelines</h3>
+                            <p>Official clinical guideline documents loaded in ChromaDB vectorstore and BM25 inverted index.</p>
+                        </div>
+                        <button class="btn btn-secondary" id="btnReindexAll">Re-Index All Guidelines</button>
+                    </div>
+
+                    <div class="guidelines-cards-grid" id="guidelinesGrid">
+                        <div class="guideline-card">
+                            <div class="guideline-icon">PDF</div>
+                            <div class="guideline-meta">
+                                <h4>Hypertension WHO.pdf</h4>
+                                <p>World Health Organization 2021 Guideline for pharmacological treatment of hypertension in adults.</p>
+                                <div class="guideline-stats">
+                                    <span>Pages: <strong>72</strong></span>
+                                    <span>Size: <strong>0.8 MB</strong></span>
+                                    <span>Status: <strong style="color: #34d399;">Indexed</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="guideline-card">
+                            <div class="guideline-icon">PDF</div>
+                            <div class="guideline-meta">
+                                <h4>hypertension-in-adults-diagnosis-and-management-pdf.pdf</h4>
+                                <p>NICE Clinical Guideline [NG136] Diagnosis and management of hypertension in adults.</p>
+                                <div class="guideline-stats">
+                                    <span>Pages: <strong>38</strong></span>
+                                    <span>Size: <strong>0.28 MB</strong></span>
+                                    <span>Status: <strong style="color: #34d399;">Indexed</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Citation Detail Drawer (Right Slide Panel) -->
+        <aside class="citation-drawer" id="citationDrawer">
+            <div class="drawer-header">
+                <h3>Source Citation & Evidence</h3>
+                <button class="drawer-close" id="btnCloseDrawer">&times;</button>
+            </div>
+            <div class="drawer-body" id="drawerContent"></div>
+        </aside>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

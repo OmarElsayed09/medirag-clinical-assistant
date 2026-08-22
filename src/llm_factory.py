@@ -34,8 +34,8 @@ def get_llm(
                 "Groq API Key is missing. Please set GROQ_API_KEY in your .env file "
                 "or provide it in the request/UI (get a free key at https://console.groq.com/keys)."
             )
-        active_model = model_name or os.getenv("GROQ_MODEL") or GROQ_MODEL or "groq/compound-mini"
-        
+        active_model = model_name or os.getenv("GROQ_MODEL") or GROQ_MODEL or "llama-3.3-70b-versatile"
+
         primary_llm = ChatGroq(
             api_key=active_key,
             model_name=active_model,
@@ -44,21 +44,27 @@ def get_llm(
             request_timeout=60,
         )
 
-        # Resilient multi-model fallbacks when daily token quotas are exhausted
-        candidate_fallbacks = ["groq/compound-mini", "openai/gpt-oss-20b", "allam-2-7b", "groq/compound"]
+        # Resilient multi-model fallbacks for uninterrupted inference
+        candidate_fallbacks = [
+            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant",
+            "mixtral-8x7b-32768",
+            "gemma2-9b-it",
+            "qwen/qwen3.6-27b",
+        ]
         fallback_models = [m for m in candidate_fallbacks if m != active_model]
-        
+
         fallbacks = [
             ChatGroq(
                 api_key=active_key,
                 model_name=fb,
                 temperature=temperature,
-                max_retries=3,
+                max_retries=2,
                 request_timeout=60,
             )
             for fb in fallback_models
         ]
-        
+
         return primary_llm.with_fallbacks(fallbacks)
 
     elif provider == "ollama":

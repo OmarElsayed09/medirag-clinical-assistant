@@ -9,9 +9,14 @@ from langchain_core.retrievers import BaseRetriever
 from src.config import MEDICAL_DISCLAIMER
 from src.llm_factory import get_llm
 from src.retriever import create_hybrid_retriever
+from src.security import (
+    detect_prompt_injection,
+    detect_clinical_emergency,
+    sanitize_pii,
+)
 
 
-MEDICAL_SYSTEM_PROMPT = """You are MediRAG, an intelligent evidence-based clinical conversational chatbot assistant.
+MEDICAL_SYSTEM_PROMPT = """You are MediRAG, an evidence-based clinical guidelines assistant.
 
 Your highest priority is factual grounding and zero hallucination.
 
@@ -19,15 +24,15 @@ CORE RULE:
 Answer ONLY from information explicitly supported by the retrieved documents.
 Never infer, extrapolate, or use medical knowledge that is not supported by the retrieved evidence.
 
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 1. CONVERSATIONAL CLINICAL INTERACTION
-━━━━━━━━━━━━━━━━━━━━━━
-You converse naturally with clinicians in a continuous multi-turn dialogue.
+--------------------------------------------------
+You converse professionally with clinicians in a continuous multi-turn dialogue.
 When the user asks follow-up questions (e.g., "What if she is pregnant?", "What are their doses?", "What about patients above 80?"), use the conversation history to understand context, but answer strictly using the retrieved evidence.
 
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 2. RELEVANCE CHECK BEFORE ANSWERING
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 Before generating an answer, determine whether the retrieved evidence is actually relevant to the user's question.
 For every retrieved chunk, evaluate:
 - Does it address the same clinical condition/topic?
@@ -37,49 +42,49 @@ For every retrieved chunk, evaluate:
 
 Do NOT treat a document as relevant merely because it contains related medical keywords.
 
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 3. CITATION RULES
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 A citation may ONLY be attached to a claim if the cited passage directly supports that claim.
 Never cite a retrieved document simply because it was returned by the retriever.
 Never use unrelated citations to justify a refusal.
 If no retrieved passage supports the answer, DO NOT provide citations.
 Format citations exactly as: `[Source: <filename>, Page: <page_number>]`
 
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 4. OUT-OF-CORPUS / UNSUPPORTED QUESTIONS
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 If the requested information is not explicitly available in the retrieved documents:
 - Do NOT answer from general medical knowledge.
 - Do NOT estimate a dose.
-- Do NOT provide a likely treatment.
+- Do NOT provide an unverified treatment.
 - Clearly state that the information is not available in the provided documents.
 
 Use this format:
 "Based on the provided documents, this information is not available. The retrieved evidence does not contain a recommendation for [requested information]. Therefore, I cannot provide a guideline-grounded answer from the available sources."
 
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 5. DIRECT EVIDENCE REQUIREMENT
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 Prefer evidence that directly states the clinical recommendation.
 Distinguish carefully between "mentioned in the guideline" and "recommended by the guideline."
 
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 6. CITATION ENTAILMENT CHECK
-━━━━━━━━━━━━━━━━━━━━━━
-Before returning each citation, internally verify:
-CLAIM → CITED PASSAGE
+--------------------------------------------------
+Before returning each citation, verify:
+CLAIM -> CITED PASSAGE
 The cited passage must provide direct textual evidence for the claim.
 If CLAIM is NOT supported by the passage, remove the citation.
 
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 7. REFUSAL SAFETY RULE
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 For clinical questions, if the relevant evidence is absent or insufficient, prefer a transparent refusal over an unsupported clinical recommendation.
 
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 8. FINAL RESPONSE FORMAT
-━━━━━━━━━━━━━━━━━━━━━━
+--------------------------------------------------
 When evidence is available:
 **Clinical Summary:**
 [Direct, conversational clinical answer strictly supported by the documents.]
@@ -127,7 +132,7 @@ def format_docs_for_context(docs: List[Document]) -> str:
         page = doc.metadata.get("page", "?")
         chunk_id = doc.metadata.get("chunk_id", f"chunk_{idx}")
         score_str = f" | Rerank Score: {doc.metadata.get('rerank_score')}" if "rerank_score" in doc.metadata else ""
-        
+
         formatted_chunks.append(
             f"--- [DOCUMENT {idx}: {source} | Page: {page} | ID: {chunk_id}{score_str}] ---\n"
             f"{doc.page_content}\n"
@@ -139,23 +144,21 @@ def format_chat_history(chat_history: Optional[List[Dict[str, Any]]], max_turns:
     """Formats recent chat history turns into a readable text block."""
     if not chat_history:
         return "No previous conversation."
-    
-    # Filter only user and assistant messages
+
     valid_msgs = [m for m in chat_history if m.get("role") in ("user", "assistant")]
     recent_msgs = valid_msgs[-(max_turns * 2):]
-    
+
     if not recent_msgs:
         return "No previous conversation."
-        
+
     lines = []
     for msg in recent_msgs:
         role_label = "Clinician" if msg.get("role") == "user" else "MediRAG Assistant"
         content = msg.get("content", "").strip()
         if content:
-            # Truncate very long assistant replies to keep context compact
             truncated = content[:400] + "..." if len(content) > 400 else content
             lines.append(f"{role_label}: {truncated}")
-            
+
     return "\n".join(lines)
 
 
@@ -179,7 +182,7 @@ def extract_citations(docs: List[Document], answer: str = "") -> List[Dict[str, 
         source = doc.metadata.get("source", "Unknown Document")
         page = doc.metadata.get("page", 1)
         key = (source, page)
-        
+
         if cited_pages and str(page) not in cited_pages:
             continue
 
@@ -193,8 +196,8 @@ def extract_citations(docs: List[Document], answer: str = "") -> List[Dict[str, 
                 "snippet": preview,
                 "rerank_score": doc.metadata.get("rerank_score"),
             })
-            
-    # Fallback: if answer cited evidence without exact page format, return deduplicated retrieved docs
+
+    # Fallback: if answer cited evidence without exact page format, return top retrieved docs
     if not citations and not is_refusal and len(docs) > 0:
         for doc in docs[:3]:
             source = doc.metadata.get("source", "Unknown Document")
@@ -222,7 +225,7 @@ def verify_clinical_safety(context: str, answer: str) -> Dict[str, Any]:
     is_refusal = any(kw in answer.lower() for kw in [
         "not available", "insufficient evidence", "cannot provide", "does not contain"
     ])
-    
+
     warnings: List[str] = []
     verified_metrics: List[str] = []
     unverified_metrics: List[str] = []
@@ -247,7 +250,7 @@ def verify_clinical_safety(context: str, answer: str) -> Dict[str, Any]:
 
     for item in answer_numbers:
         item_clean = item.strip().lower()
-        if len(item_clean) >= 2 and not item_clean.isdigit() or (item_clean.isdigit() and int(item_clean) > 10):
+        if len(item_clean) >= 2 and (not item_clean.isdigit() or int(item_clean) > 10):
             core_num = re.findall(r'\d+(?:/\d+)?(?:\.\d+)?', item_clean)
             if core_num and core_num[0] in context_lower:
                 verified_metrics.append(item)
@@ -260,11 +263,11 @@ def verify_clinical_safety(context: str, answer: str) -> Dict[str, Any]:
     # Pregnancy Check for Antihypertensives (ACEi / ARBs)
     if any(drug in answer_lower for drug in ["ace", "arb", "angiotensin", "lisinopril", "losartan", "enalapril"]):
         if any(term in answer_lower for term in ["pregnant", "pregnancy"]):
-            warnings.append("**Contraindication Notice:** ACE inhibitors and ARBs are strictly contraindicated during pregnancy due to risk of fetal harm.")
+            warnings.append("Contraindication Notice: ACE inhibitors and ARBs are strictly contraindicated during pregnancy due to risk of fetal harm.")
 
     # Renal / Hyperkalemia Check
     if any(term in answer_lower for term in ["diuretic", "spironolactone", "ace", "arb"]) and any(term in answer_lower for term in ["kidney", "renal", "kalemia", "potassium"]):
-        warnings.append("**Clinical Caution:** Monitor renal function (eGFR) and serum potassium regularly when initiating combination therapies.")
+        warnings.append("Clinical Caution: Monitor renal function (eGFR) and serum potassium regularly when initiating combination therapies.")
 
     # Calculate Fact-Check Score
     total_metrics = len(verified_metrics) + len(unverified_metrics)
@@ -328,7 +331,7 @@ class MedicalRAGPipeline:
                 "chat_history": history_str,
                 "question": question,
             }).strip()
-            
+
             standalone_q = re.sub(r"<think>.*?</think>", "", standalone_q, flags=re.DOTALL).strip()
             return standalone_q if len(standalone_q) >= 4 else question
         except Exception as e:
@@ -345,9 +348,47 @@ class MedicalRAGPipeline:
         Real-time Token Streaming Conversational Generator with Multi-Turn Memory.
         """
         start_t = time.time()
-        
-        # Reformulate question if it is a conversational follow-up
-        search_query = self.condense_query_if_needed(question, chat_history)
+
+        # 1. Security Check: Prompt Injection / Jailbreak Filter
+        is_injection, injection_msg = detect_prompt_injection(question)
+        if is_injection:
+            if result_container is not None:
+                result_container.update({
+                    "question": question,
+                    "search_query": question,
+                    "answer": f"Security Notice: {injection_msg}",
+                    "citations": [],
+                    "safety_audit": {"passed": False, "status": "[Security Blocked] Prompt Injection Attempt", "warnings": [injection_msg]},
+                    "disclaimer": MEDICAL_DISCLAIMER,
+                    "raw_documents": [],
+                    "latency_seconds": round(time.time() - start_t, 2),
+                    "grounding_status": "[Security Blocked] Prompt Injection",
+                })
+            yield f"Security Notice: {injection_msg}"
+            return
+
+        # 2. Acute Clinical Emergency Detection
+        is_emergency, emergency_msg = detect_clinical_emergency(question)
+        if is_emergency:
+            if result_container is not None:
+                result_container.update({
+                    "question": question,
+                    "search_query": question,
+                    "answer": emergency_msg,
+                    "citations": [],
+                    "safety_audit": {"passed": False, "status": "[Emergency Intercept] Acute Red Flag", "warnings": ["Life-threatening clinical red flag identified."]},
+                    "disclaimer": MEDICAL_DISCLAIMER,
+                    "raw_documents": [],
+                    "latency_seconds": round(time.time() - start_t, 2),
+                    "grounding_status": "[Emergency Intercept] Immediate Referral Required",
+                })
+            yield emergency_msg
+            return
+
+        # 3. PII / PHI Sanitize
+        clean_question, pii_count = sanitize_pii(question)
+
+        search_query = self.condense_query_if_needed(clean_question, chat_history)
         retrieved_docs = self.retriever.invoke(search_query)
         history_formatted = format_chat_history(chat_history)
 
@@ -394,8 +435,7 @@ class MedicalRAGPipeline:
 
         full_answer = "".join(accumulated_chunks).strip()
         full_answer = re.sub(r"<think>.*?</think>", "", full_answer, flags=re.DOTALL).strip()
-        
-        # Extract citations strictly corresponding to supported claims
+
         citations = extract_citations(retrieved_docs, answer=full_answer)
         safety_audit = verify_clinical_safety(context_text, full_answer)
         elapsed = round(time.time() - start_t, 2)
@@ -428,11 +468,44 @@ class MedicalRAGPipeline:
     ) -> Dict[str, Any]:
         """Synchronous query executing conversational multi-turn RAG flow."""
         start_t = time.time()
-        
-        search_query = self.condense_query_if_needed(question, chat_history)
+
+        # 1. Security Check: Prompt Injection / Jailbreak Filter
+        is_injection, injection_msg = detect_prompt_injection(question)
+        if is_injection:
+            return {
+                "question": question,
+                "search_query": question,
+                "answer": f"Security Notice: {injection_msg}",
+                "citations": [],
+                "safety_audit": {"passed": False, "status": "[Security Blocked] Prompt Injection Attempt", "warnings": [injection_msg]},
+                "disclaimer": MEDICAL_DISCLAIMER,
+                "raw_documents": [],
+                "latency_seconds": round(time.time() - start_t, 2),
+                "grounding_status": "[Security Blocked] Prompt Injection",
+            }
+
+        # 2. Acute Clinical Emergency Detection
+        is_emergency, emergency_msg = detect_clinical_emergency(question)
+        if is_emergency:
+            return {
+                "question": question,
+                "search_query": question,
+                "answer": emergency_msg,
+                "citations": [],
+                "safety_audit": {"passed": False, "status": "[Emergency Intercept] Acute Red Flag", "warnings": ["Life-threatening clinical red flag identified."]},
+                "disclaimer": MEDICAL_DISCLAIMER,
+                "raw_documents": [],
+                "latency_seconds": round(time.time() - start_t, 2),
+                "grounding_status": "[Emergency Intercept] Immediate Referral Required",
+            }
+
+        # 3. PII / PHI Sanitize
+        clean_question, pii_count = sanitize_pii(question)
+
+        search_query = self.condense_query_if_needed(clean_question, chat_history)
         retrieved_docs = self.retriever.invoke(search_query)
         history_formatted = format_chat_history(chat_history)
-        
+
         if not retrieved_docs:
             not_found_msg = (
                 "Based on the provided documents, this information is not available. "
@@ -457,7 +530,7 @@ class MedicalRAGPipeline:
             "chat_history": history_formatted,
             "question": question,
         })
-        
+
         response_text = re.sub(r"<think>.*?</think>", "", response_text, flags=re.DOTALL).strip()
         citations = extract_citations(retrieved_docs, answer=response_text)
         safety_audit = verify_clinical_safety(context_text, response_text)

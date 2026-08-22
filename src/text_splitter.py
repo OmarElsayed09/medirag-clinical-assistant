@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from src.config import CHUNK_SIZE, CHUNK_OVERLAP
@@ -13,11 +13,11 @@ def get_medical_text_splitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         separators=[
-            "\n\n\n",  # Section breaks
-            "\n\n",    # Paragraph breaks
+            "\n\n\n",  # Major Section breaks
+            "\n\n",    # Paragraph / Recommendation breaks
             "\n",      # Line breaks / table rows
             ". ",      # Sentence boundaries
-            "; ",      # Clinical listing
+            "; ",      # Clinical lists / enumerations
             ", ",
             " ",
             "",
@@ -37,7 +37,7 @@ def split_documents(
     raw_chunks = splitter.split_documents(documents)
 
     enriched_chunks: List[Document] = []
-    chunk_counters: dict = {}
+    chunk_counters: Dict[str, int] = {}
 
     for chunk in raw_chunks:
         source = chunk.metadata.get("source", "unknown")
