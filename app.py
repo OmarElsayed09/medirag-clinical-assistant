@@ -90,14 +90,57 @@ st.markdown("""
         overflow-x: hidden !important;
     }
 
-    /* Responsive Main Container (Scales Fluidly Across Desktop, Tablets & Mobile) */
-    .block-container {
-        padding-top: clamp(0.8rem, 2vw, 1.5rem) !important;
-        padding-bottom: clamp(6.5rem, 10vw, 8.5rem) !important;
-        padding-left: clamp(0.75rem, 3vw, 2rem) !important;
-        padding-right: clamp(0.75rem, 3vw, 2rem) !important;
-        max-width: min(100%, 1150px) !important;
+    /* ------------------------------------------------------------------------- */
+    /* HIDE STREAMLIT DEFAULT HEADER, TOOLBAR, WATERMARK & FOOTER               */
+    /* Eliminates top wasted space for clean screenshot-ready LinkedIn look     */
+    /* ------------------------------------------------------------------------- */
+    header,
+    header[data-testid="stHeader"],
+    .stAppHeader,
+    [data-testid="stHeader"],
+    div[data-testid="stDecoration"],
+    div[data-testid="stToolbar"],
+    div[data-testid="stToolbarActions"],
+    div[data-testid="stHeaderActions"],
+    .stDeployButton,
+    #MainMenu,
+    footer,
+    div[data-testid="stStatusWidget"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        max-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+
+    [data-testid="stAppViewContainer"] > .main {
+        padding-top: 0 !important;
+    }
+
+    /* Responsive Main Container (Clean, compact, no top dead-space) */
+    .block-container,
+    div[data-testid="stAppViewBlockContainer"] {
+        padding-top: 0.4rem !important;
+        padding-bottom: clamp(6rem, 9vw, 8rem) !important;
+        padding-left: clamp(0.75rem, 2.5vw, 1.8rem) !important;
+        padding-right: clamp(0.75rem, 2.5vw, 1.8rem) !important;
+        max-width: min(100%, 1180px) !important;
         margin: 0 auto !important;
+    }
+
+    /* Clean Floating Sidebar Toggle (when sidebar is closed) */
+    div[data-testid="stSidebarCollapsedControl"] {
+        top: 8px !important;
+        left: 8px !important;
+        z-index: 1000 !important;
+        background: rgba(13, 21, 38, 0.9) !important;
+        border: 1px solid rgba(56, 189, 248, 0.3) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
     }
 
     /* Minimal Custom Scrollbars */
@@ -185,10 +228,10 @@ st.markdown("""
         scrollbar-width: none !important;
         gap: 6px !important;
         background: rgba(15, 23, 42, 0.75) !important;
-        padding: 6px 8px !important;
-        border-radius: 14px !important;
+        padding: 5px 6px !important;
+        border-radius: 12px !important;
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        margin-bottom: 18px !important;
+        margin-bottom: 12px !important;
     }
 
     .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
@@ -198,10 +241,10 @@ st.markdown("""
     .stTabs [data-baseweb="tab"] {
         flex-shrink: 0 !important;
         white-space: nowrap !important;
-        border-radius: 10px !important;
-        padding: 8px 14px !important;
+        border-radius: 9px !important;
+        padding: 7px 12px !important;
         font-weight: 600 !important;
-        font-size: clamp(0.78rem, 1.4vw, 0.88rem) !important;
+        font-size: clamp(0.78rem, 1.3vw, 0.86rem) !important;
         color: #94a3b8 !important;
         border: none !important;
         transition: all 0.2s ease !important;
@@ -224,8 +267,8 @@ st.markdown("""
         background: rgba(13, 21, 38, 0.85);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
-        padding: clamp(12px, 2vw, 18px);
-        margin-bottom: 14px;
+        padding: clamp(10px, 1.8vw, 16px);
+        margin-bottom: 12px;
         backdrop-filter: blur(16px);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
         word-break: break-word;
@@ -233,10 +276,10 @@ st.markdown("""
 
     .clinical-card-header {
         font-family: 'Outfit', sans-serif;
-        font-size: clamp(1rem, 2vw, 1.18rem);
+        font-size: clamp(0.95rem, 1.8vw, 1.12rem);
         font-weight: 700;
         color: #ffffff;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
         display: flex;
         align-items: center;
         gap: 8px;
@@ -245,9 +288,9 @@ st.markdown("""
 
     .metric-badge {
         display: inline-block;
-        padding: 4px 10px;
+        padding: 3px 9px;
         border-radius: 6px;
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         font-weight: 700;
         letter-spacing: 0.5px;
     }
@@ -270,43 +313,68 @@ st.markdown("""
         border: 1px solid rgba(34, 197, 94, 0.3);
     }
 
-    /* Hero / Prompt Cards */
+    /* Hero / Prompt Cards - Ultra-Sleek & Space-Efficient */
     .hero-wrapper {
         text-align: center;
-        padding: clamp(20px, 4vw, 36px) 10px 16px 10px;
+        padding: clamp(6px, 1.5vw, 14px) 8px 6px 8px;
     }
 
     .hero-monogram {
-        width: clamp(42px, 6vw, 52px);
-        height: clamp(42px, 6vw, 52px);
-        border-radius: 12px;
+        width: clamp(36px, 4.5vw, 44px);
+        height: clamp(36px, 4.5vw, 44px);
+        border-radius: 10px;
         background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-family: 'Outfit', sans-serif;
         font-weight: 800;
-        font-size: clamp(1.3rem, 3vw, 1.7rem);
+        font-size: clamp(1.2rem, 2.4vw, 1.45rem);
         color: #ffffff;
-        margin-bottom: 12px;
-        box-shadow: 0 0 24px rgba(14, 165, 233, 0.4);
+        margin-bottom: 6px;
+        box-shadow: 0 0 20px rgba(14, 165, 233, 0.35);
     }
 
     .hero-heading {
         font-family: 'Outfit', sans-serif;
-        font-size: clamp(1.35rem, 3.5vw, 1.8rem);
+        font-size: clamp(1.2rem, 2.6vw, 1.55rem);
         font-weight: 800;
         color: #ffffff;
         letter-spacing: -0.5px;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
 
     .hero-sub {
         color: #94a3b8;
-        font-size: clamp(0.85rem, 1.6vw, 0.95rem);
+        font-size: clamp(0.82rem, 1.4vw, 0.88rem);
         max-width: 600px;
-        margin: 0 auto 20px auto;
-        line-height: 1.5;
+        margin: 0 auto 12px auto;
+        line-height: 1.4;
+    }
+
+    /* Sleek Custom Prompt Suggestion Buttons */
+    div[data-testid="stButton"] > button {
+        border-radius: 10px !important;
+        border: 1px solid rgba(255, 255, 255, 0.09) !important;
+        background: rgba(13, 21, 38, 0.85) !important;
+        color: #e2e8f0 !important;
+        transition: all 0.2s ease !important;
+        padding: 8px 14px !important;
+        font-size: 0.84rem !important;
+        text-align: left !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    div[data-testid="stButton"] > button:hover {
+        border-color: rgba(56, 189, 248, 0.45) !important;
+        background: rgba(14, 165, 233, 0.12) !important;
+        color: #38bdf8 !important;
+        box-shadow: 0 4px 16px rgba(14, 165, 233, 0.2) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    div[data-testid="stButton"] > button:active {
+        transform: translateY(0px) !important;
     }
 
     /* Telemetry row */
@@ -597,18 +665,18 @@ with st.sidebar:
 # MAIN VIEW: 7 SPECIALIZED CLINICAL TABS (Fully Responsive)
 # -----------------------------------------------------------------------------
 tab_chat, tab_case, tab_ddi, tab_calc, tab_guidelines, tab_patient, tab_eval = st.tabs([
-    "💬 Clinical Consultation",
-    "📋 Patient Case & SOAP",
-    "💊 Drug Interactions (DDI)",
-    "🧮 Rapid Calculators",
-    "⚖️ Guideline Consensus",
-    "📄 Patient Leaflet",
-    "📊 Benchmark Suite",
+    "Clinical Consultation",
+    "Patient Case & SOAP",
+    "Drug Interactions (DDI)",
+    "Rapid Calculators",
+    "Guideline Consensus",
+    "Patient Leaflet",
+    "Benchmark Suite",
 ])
 
 
 # =============================================================================
-# TAB 1: 💬 CLINICAL CONSULTATION (PURE CHATGPT LIVE CHAT)
+# TAB 1: CLINICAL CONSULTATION (PURE CHATGPT LIVE CHAT)
 # =============================================================================
 with tab_chat:
     if not active_messages:
@@ -624,24 +692,24 @@ with tab_chat:
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("First-Line Antihypertensive Classes\n\nWhat are the recommended first-line drug classes for adult hypertension?", use_container_width=True):
+            if st.button("First-Line Antihypertensives\nRecommended drug classes for hypertension", use_container_width=True):
                 st.session_state.temp_prompt = "What are the recommended first-line pharmacological treatment classes for hypertension in adults according to official guidelines?"
                 st.rerun()
 
-            if st.button("Pregnancy Contraindications & Safety\n\nWhich antihypertensive drug classes are strictly contraindicated in pregnant women?", use_container_width=True):
+            if st.button("Pregnancy Contraindications\nContraindicated classes & safe alternatives", use_container_width=True):
                 st.session_state.temp_prompt = "Which antihypertensive drug classes are strictly contraindicated in pregnant women, and what are the preferred safe alternatives?"
                 st.rerun()
 
         with col2:
-            if st.button("Target Blood Pressure Thresholds\n\nWhat is the recommended target blood pressure goal for patients with comorbidities?", use_container_width=True):
+            if st.button("Target Blood Pressure Goals\nTarget BP thresholds for comorbidities", use_container_width=True):
                 st.session_state.temp_prompt = "What are the recommended target blood pressure thresholds for adults with hypertension and cardiovascular comorbidities?"
                 st.rerun()
 
-            if st.button("Elderly Patient Protocol (Age >= 80)\n\nWhat are the target blood pressure numbers and dosing strategies for patients over 80?", use_container_width=True):
+            if st.button("Elderly Protocol (Age ≥ 80)\nBP targets & cautious dosing strategies", use_container_width=True):
                 st.session_state.temp_prompt = "What are the specific blood pressure targets and dosing considerations for elderly patients aged 80 years and older?"
                 st.rerun()
 
-        st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom: 8px;'></div>", unsafe_allow_html=True)
 
     # Render Active Messages
     for msg in active_messages:
@@ -748,7 +816,7 @@ with tab_chat:
 with tab_case:
     st.markdown("""
     <div class="clinical-card">
-        <div class="clinical-card-header">📋 Patient Case Analyzer & SOAP Decision Pathway</div>
+        <div class="clinical-card-header">Patient Case Analyzer & SOAP Decision Pathway</div>
         <p style="color: #94a3b8; font-size: 0.88rem; margin: 0;">
             Evaluates comprehensive clinical parameters, classifies BP & KDIGO renal stages, audits drug interactions, and synthesizes a full SOAP note with downloadable official PDF report.
         </p>
@@ -802,7 +870,7 @@ with tab_case:
             p_clinician = st.text_input("Clinician Name", value="Dr. Omar Elsayed, MD")
             p_facility = st.text_input("Medical Facility / Unit", value="Cardiology Clinical Services")
 
-        btn_analyze = st.form_submit_button("⚡ Analyze Patient & Synthesize SOAP Pathway", type="primary", use_container_width=True)
+        btn_analyze = st.form_submit_button("Analyze Patient & Synthesize SOAP Pathway", type="primary", use_container_width=True)
 
     if btn_analyze:
         with st.spinner("Synthesizing clinical decision pathway..."):
@@ -835,7 +903,7 @@ with tab_case:
             # DDI Alerts
             ddi = case_res.get("drug_interactions")
             if ddi and ddi.get("interactions"):
-                st.markdown("#### 🚨 Drug Interaction & Contraindication Warnings")
+                st.markdown("#### Drug Interaction & Contraindication Warnings")
                 for inter in ddi["interactions"]:
                     badge_cls = "metric-badge-critical" if inter.get("severity_code") == "critical" else "metric-badge-warning"
                     st.markdown(f"""
@@ -856,7 +924,7 @@ with tab_case:
 
             # Structured SOAP Display
             soap = case_res.get("soap_note", {})
-            st.markdown("#### 📝 Synthesized Clinical SOAP Note")
+            st.markdown("#### Synthesized Clinical SOAP Note")
             with st.container():
                 st.markdown(f"**Subjective (S):** {soap.get('subjective')}")
                 st.markdown(f"**Objective (O):** {soap.get('objective')}")
@@ -874,7 +942,7 @@ with tab_case:
 
             st.markdown("<div style='margin-top: 14px;'></div>", unsafe_allow_html=True)
             st.download_button(
-                label="📥 Download Official Clinical SOAP Report (PDF)",
+                label="Download Official Clinical SOAP Report (PDF)",
                 data=pdf_data,
                 file_name=f"Clinical_SOAP_Report_Age{p_age}_{p_sex}.pdf",
                 mime="application/pdf",
@@ -889,7 +957,7 @@ with tab_case:
 with tab_ddi:
     st.markdown("""
     <div class="clinical-card">
-        <div class="clinical-card-header">💊 Clinical Drug-Drug Interaction (DDI) Matrix</div>
+        <div class="clinical-card-header">Clinical Drug-Drug Interaction (DDI) Matrix</div>
         <p style="color: #94a3b8; font-size: 0.88rem; margin: 0;">
             Live contraindication surveillance engine based on WHO, NICE, and KDIGO clinical pharmacology standards.
         </p>
@@ -946,7 +1014,7 @@ with tab_ddi:
         total_f = ddi_eval_res.get("total_interactions_found", 0)
 
         if total_f > 0:
-            st.markdown(f"#### ⚠️ {total_f} Clinical Interactions Detected")
+            st.markdown(f"#### {total_f} Clinical Interactions Detected")
             for item in ddi_eval_res.get("interactions", []):
                 is_crit = item.get("severity_code") == "critical"
                 border_c = "#ef4444" if is_crit else "#f59e0b"
@@ -980,7 +1048,7 @@ with tab_ddi:
 with tab_calc:
     st.markdown("""
     <div class="clinical-card">
-        <div class="clinical-card-header">🧮 Rapid Clinical Decision Calculators</div>
+        <div class="clinical-card-header">Rapid Clinical Decision Calculators</div>
         <p style="color: #94a3b8; font-size: 0.88rem; margin: 0;">
             Evidence-based algorithmic calculations for Blood Pressure Staging, CKD-EPI 2021 eGFR, Cockcroft-Gault CrCl, and 10-year CVD Risk.
         </p>
@@ -1049,7 +1117,7 @@ with tab_calc:
 with tab_guidelines:
     st.markdown("""
     <div class="clinical-card">
-        <div class="clinical-card-header">⚖️ Multi-Guideline Consensus & Divergence Matrix</div>
+        <div class="clinical-card-header">Multi-Guideline Consensus & Divergence Matrix</div>
         <p style="color: #94a3b8; font-size: 0.88rem; margin: 0;">
             Side-by-side clinical comparison across World Health Organization (WHO 2021), NICE UK (NG136), and ACC/AHA (2017) hypertension guidelines.
         </p>
@@ -1058,7 +1126,7 @@ with tab_guidelines:
 
     matrix_items = get_guidelines_comparison()
     for item in matrix_items:
-        st.markdown(f"#### 📌 {item['topic']}")
+        st.markdown(f"#### {item['topic']}")
         col_g1, col_g2, col_g3 = st.columns([1, 1, 1])
         with col_g1:
             st.markdown(f"""
@@ -1095,7 +1163,7 @@ with tab_guidelines:
 with tab_patient:
     st.markdown("""
     <div class="clinical-card">
-        <div class="clinical-card-header">📄 Patient Health & Discharge Education Generator</div>
+        <div class="clinical-card-header">Patient Health & Discharge Education Generator</div>
         <p style="color: #94a3b8; font-size: 0.88rem; margin: 0;">
             Generates clear, patient-centered lifestyle instructions, medication safety rules, and emergency red-flag warning sheets (English & Arabic).
         </p>
@@ -1111,7 +1179,7 @@ with tab_patient:
         with col_lf3:
             leaf_lang = st.selectbox("Leaflet Language", ["Arabic", "English"], index=0)
 
-        btn_gen_leaf = st.form_submit_button("📄 Generate Discharge Leaflet", type="primary", use_container_width=True)
+        btn_gen_leaf = st.form_submit_button("Generate Discharge Leaflet", type="primary", use_container_width=True)
 
     if btn_gen_leaf:
         guide_res = generate_patient_education_guide(
@@ -1125,16 +1193,16 @@ with tab_patient:
 
         col_lr1, col_lr2 = st.columns(2)
         with col_lr1:
-            st.markdown("#### 🥗 Lifestyle & Nutrition Rules")
+            st.markdown("#### Lifestyle & Nutrition Rules")
             for rule in guide_res.get("lifestyle_rules", []):
                 st.markdown(f"- {rule}")
 
         with col_lr2:
-            st.markdown("#### 💊 Medication Safety Tips")
+            st.markdown("#### Medication Safety Tips")
             for tip in guide_res.get("medication_safety_tips", []):
                 st.markdown(f"- {tip}")
 
-        st.markdown("#### 🚨 Acute Emergency Red Flags")
+        st.markdown("#### Acute Emergency Red Flags")
         for flag in guide_res.get("emergency_red_flags", []):
             st.markdown(f"- **{flag}**")
         st.error(guide_res.get("emergency_action"))
@@ -1144,7 +1212,7 @@ with tab_patient:
 
         st.markdown("<div style='margin-top: 14px;'></div>", unsafe_allow_html=True)
         st.download_button(
-            label="📥 Download Patient Discharge Leaflet (PDF)",
+            label="Download Patient Discharge Leaflet (PDF)",
             data=leaf_pdf_bytes,
             file_name=f"Patient_Discharge_Guide_{leaf_lang}.pdf",
             mime="application/pdf",
@@ -1159,14 +1227,14 @@ with tab_patient:
 with tab_eval:
     st.markdown("""
     <div class="clinical-card">
-        <div class="clinical-card-header">📊 MediRAG Benchmark & RAG Triad Evaluation Suite</div>
+        <div class="clinical-card-header">MediRAG Benchmark & RAG Triad Evaluation Suite</div>
         <p style="color: #94a3b8; font-size: 0.88rem; margin: 0;">
             Automated quality assurance benchmark measuring Faithfulness, Context Relevance, Hit Rate, Safety Refusal Rate, and Latency.
         </p>
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("🚀 Run Live RAG Triad Benchmark", type="primary"):
+    if st.button("Run Live RAG Triad Benchmark", type="primary"):
         with st.spinner("Executing automated test suite against clinical guidelines..."):
             evaluator = RAGEvaluator()
             bench_res = evaluator.run_benchmark()
