@@ -16,7 +16,7 @@ jobs:
       - name: Install lightweight test dependencies
         run: python -m pip install "pytest>=8,<10"
       - name: Run dependency-free calculator and security tests
-        run: python -m pytest -q tests/test_clinical_tools.py tests/test_security.py
+        run: python -m pytest -q tests/test_clinical_tools.py tests/test_security.py tests/test_frontend_claims.py
       - name: Export machine-readable test report
         if: always()
         run: python -m pytest -q tests/test_clinical_tools.py tests/test_security.py --junitxml=artifacts/clinical-tests.xml
