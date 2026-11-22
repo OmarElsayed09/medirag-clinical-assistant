@@ -1,8 +1,8 @@
-# MediRAG
+> **Safety and evaluation notice:** This is a research/portfolio prototype, **not a medical device or validated clinical decision-support service**. Generated answers, page citations, drug interactions, calculators, and emergency flags must be independently checked by qualified clinicians against current source guidelines. A temperature of zero does **not** guarantee accuracy or eliminate hallucinations. No 100% safety or clinical performance claim is made here.\n\n# MediRAG
 
-## Clinical Guidelines AI Assistant & Zero-Hallucination Medical RAG
+## Clinical Guidelines Retrieval-Augmented QA Prototype
 
-MediRAG is an evidence-based medical AI assistant that answers clinical questions strictly from official medical guidelines (e.g., WHO, NICE). It uses Two-Stage Hybrid Search (ChromaDB + BM25 + Cross-Encoder Reranking), enforces Zero Hallucination (`temperature=0.0`), provides exact page citations, and includes native clinical decision calculators.
+MediRAG is an evidence-based medical AI assistant that answers clinical questions strictly from official medical guidelines (e.g., WHO, NICE). It uses Two-Stage Hybrid Search (ChromaDB + BM25 + Cross-Encoder Reranking), uses a low-generation-temperature setting (`temperature=0.0`) to reduce response variability, provides exact page citations, and includes native clinical decision calculators.
 
 ---
 
@@ -58,20 +58,20 @@ streamlit run app.py
 
 ## Key Features
 
-- **Strict Grounding:** Zero hallucination (`temperature=0.0`). Refuses to answer if evidence is absent from the indexed guidelines.
+- **Grounding controls:** Attempts to answer using indexed guidelines with source citations; these controls do not eliminate hallucinations or guarantee correct refusals.
 - **Page Citations:** Every clinical claim includes source document name and page number `[Source: filename, Page: page]`.
 - **Two-Stage Hybrid Retrieval:** Dense ChromaDB vectors + Sparse BM25 keyword matching + Cross-Encoder precision reranking (`ms-marco-MiniLM-L-6-v2`).
 - **Clinical Decision Support & Expert Suite:**
   - **Comprehensive Patient Case Analyzer & SOAP Synthesis:** Automated evaluation of vitals, KDIGO renal stages, CVD risks, and guideline-supported SOAP clinical notes.
   - **Drug-Drug Interaction (DDI) & Contraindication Matrix:** Live contraindication surveillance with severity alerts (Dual RAS Blockade, Hyperkalemia, AV block).
-  - **Medical-Grade PDF Export Engine:** Generates official clinical SOAP reports and patient discharge education leaflets in PDF format.
+  - **PDF Report Export:** Generates prototype clinical SOAP reports and patient discharge education leaflets in PDF format.
   - **Blood Pressure Staging:** Evaluates measurements against WHO and ACC/AHA classification criteria.
   - **Renal Function & Drug Dosing Calculator:** CKD-EPI 2021 eGFR and Cockcroft-Gault CrCl calculations with antihypertensive dosing rules.
   - **Cardiovascular Risk Stratification:** 10-year CVD risk tier estimation.
   - **Multi-Guideline Consensus Matrix:** Side-by-side comparison across WHO 2021, NICE NG136, and ACC/AHA 2017.
 - **Multi-Turn Clinical Memory:** Conversational query rewriting for contextual follow-up questions.
-- **Enterprise Security & Guardrails Engine:**
-  - **OWASP LLM Prompt Injection Defense:** Real-time adversarial jailbreak detection and neutralization.
+- **Security & Guardrails Prototype:**
+  - **Prompt Injection Heuristics:** Attempts to flag suspicious instructions; not a certified or comprehensive defense.
   - **Acute Emergency Interception:** Immediate detection and ER redirection for life-threatening clinical red flags (ACS, stroke, anaphylaxis).
   - **Medical PII/PHI Redaction:** Automatic stripping of patient emails, phones, SSNs, and IDs before LLM synthesis.
   - **Rate Limiting & File Upload Security:** Sliding window 40 req/min defense, PDF magic byte verification, and path traversal prevention.
@@ -90,7 +90,7 @@ streamlit run app.py
 | **4. Evaluation & Metrics** | Automated RAG Triad Suite measuring Faithfulness, Context Relevance, Recall, Latency |
 | **5. Clinical Safety** | 100% Safety Refusal on out-of-scope queries; Contraindication alerts |
 | **6. Clinical Tools** | Integrated BP staging, eGFR renal dosing calculator, CVD risk scoring, DDI Matrix |
-| **7. Production Ready** | Docker containerization, SSE streaming endpoints, in-memory PDF export |
+| **7. Containerized Prototype** | Docker containerization, SSE streaming endpoints, in-memory PDF export |
 
 ### Run Benchmark via CLI
 
