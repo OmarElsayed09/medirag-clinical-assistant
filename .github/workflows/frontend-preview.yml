@@ -17,7 +17,7 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: Serve checked-in frontend assets
         run: |
-          python -m http.server 8000 --directory static > frontend.log 2>&1 &
+          python -m http.server 8000 > frontend.log 2>&1 &
       - name: Capture real static page preview
         run: |
           mkdir -p artifacts
@@ -26,7 +26,7 @@ jobs:
           with sync_playwright() as p:
               browser = p.chromium.launch()
               page = browser.new_page(viewport={"width": 1440, "height": 900})
-              page.goto("http://127.0.0.1:8000/index.html", wait_until="domcontentloaded", timeout=30000)
+              page.goto("http://127.0.0.1:8000/static/index.html", wait_until="domcontentloaded", timeout=30000)
               page.screenshot(path="artifacts/frontend-static-preview.png", full_page=True)
               browser.close()
           PY
