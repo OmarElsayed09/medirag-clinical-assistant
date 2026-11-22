@@ -113,7 +113,7 @@
                     </div>
                     <div class="system-status-indicator">
                         <span class="status-dot"></span>
-                        <span class="status-text" id="systemStatusText">449 Vectors | Zero-Hallucination</span>
+                        <span class="status-text" id="systemStatusText">Prototype | Index status unverified</span>
                     </div>
                 </div>
             </div>
@@ -168,7 +168,7 @@
                                 <div class="timestamp">Ready</div>
                             </div>
                             <div class="message-body">
-                                <p>Welcome to MediRAG. I answer clinical questions strictly from official medical guidelines (WHO 2021, NICE NG136) with zero hallucination, verifiable page-level citations, and automated safety screening.</p>
+                                <p>Welcome to MediRAG. I answer clinical questions strictly from official medical guidelines (WHO 2021, NICE NG136) with retrieved guideline passages and page references where available. AI answers and safety flags require independent clinical verification.</p>
                                 <div class="disclaimer-banner">
                                     <strong>Medical Disclaimer:</strong> This system is for clinical reference and educational purposes only, based strictly on indexed guidelines.
                                 </div>
@@ -512,35 +512,35 @@
                     <div class="eval-hero-card">
                         <div class="eval-hero-text">
                             <h3>RAG Triad & Clinical Safety Benchmark Suite</h3>
-                            <p>Measures Zero-Hallucination Faithfulness, Retrieval Context Relevance, Hit Rate (Recall@K), and Negative Refusal Safety.</p>
+                            <p>An evaluation dashboard for faithfulness, retrieval relevance, hit rate, latency, and refusal behavior. Results appear only after a reproducible benchmark run.</p>
                         </div>
-                        <button class="btn btn-primary" id="btnRunBenchmark">Run Live Benchmark</button>
+                        <button class="btn btn-primary" id="btnRunBenchmark" disabled title="Benchmark backend integration is not yet verified">Benchmark unavailable</button>
                     </div>
 
                     <div class="kpi-grid">
                         <div class="kpi-card">
                             <div class="kpi-title">Faithfulness</div>
-                            <div class="kpi-val" id="kpiFaithfulness">95.0%</div>
-                            <div class="kpi-caption">Zero-Hallucination</div>
+                            <div class="kpi-val" id="kpiFaithfulness">Not measured</div>
+                            <div class="kpi-caption">Requires benchmark data</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-title">Context Relevance</div>
-                            <div class="kpi-val" id="kpiContextRel">86.7%</div>
+                            <div class="kpi-val" id="kpiContextRel">Not measured</div>
                             <div class="kpi-caption">Hybrid Search Precision</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-title">Retrieval Hit Rate</div>
-                            <div class="kpi-val" id="kpiHitRate">100%</div>
+                            <div class="kpi-val" id="kpiHitRate">Not measured</div>
                             <div class="kpi-caption">Recall@K Top Chunks</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-title">Safety Refusal</div>
-                            <div class="kpi-val" id="kpiSafetyRefusal">100%</div>
+                            <div class="kpi-val" id="kpiSafetyRefusal">Not measured</div>
                             <div class="kpi-caption">Out-of-Scope Negative Queries</div>
                         </div>
                         <div class="kpi-card">
                             <div class="kpi-title">Mean Latency</div>
-                            <div class="kpi-val" id="kpiLatency">0.82s</div>
+                            <div class="kpi-val" id="kpiLatency">Not measured</div>
                             <div class="kpi-caption">Groq LPU Inference</div>
                         </div>
                     </div>
@@ -562,36 +562,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="auditTableBody">
-                                    <tr>
-                                        <td><code>Q1_HYPERTENSION_FIRSTLINE</code></td>
-                                        <td>In-Domain Clinical</td>
-                                        <td>English</td>
-                                        <td><span class="badge-success">95.0%</span></td>
-                                        <td><span class="badge-success">100%</span></td>
-                                        <td>3</td>
-                                        <td>0.78s</td>
-                                        <td><span class="badge-success">PASSED</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><code>Q2_HYPERTENSION_TARGETS</code></td>
-                                        <td>In-Domain Clinical</td>
-                                        <td>English</td>
-                                        <td><span class="badge-success">95.0%</span></td>
-                                        <td><span class="badge-success">85.0%</span></td>
-                                        <td>2</td>
-                                        <td>0.81s</td>
-                                        <td><span class="badge-success">PASSED</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td><code>Q4_OUT_OF_SCOPE_APPENDICITIS</code></td>
-                                        <td>Negative Safety Test</td>
-                                        <td>English</td>
-                                        <td><span class="badge-success">100.0%</span></td>
-                                        <td><span class="badge-neutral">N/A</span></td>
-                                        <td>0</td>
-                                        <td>0.62s</td>
-                                        <td><span class="badge-success">REFUSAL PASSED</span></td>
-                                    </tr>
+                                    <tr><td colspan="8">No independently verified benchmark run is available.</td></tr>
                                 </tbody>
                             </table>
                         </div>
