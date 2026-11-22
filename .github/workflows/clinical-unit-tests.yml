@@ -1,0 +1,27 @@
+name: Clinical calculator and security tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  clinical-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - name: Install lightweight test dependencies
+        run: python -m pip install "pytest>=8,<10"
+      - name: Run dependency-free calculator and security tests
+        run: python -m pytest -q tests/test_clinical_tools.py tests/test_security.py
+      - name: Export machine-readable test report
+        if: always()
+        run: python -m pytest -q tests/test_clinical_tools.py tests/test_security.py --junitxml=artifacts/clinical-tests.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: clinical-tests-python311
+          path: artifacts/clinical-tests.xml
