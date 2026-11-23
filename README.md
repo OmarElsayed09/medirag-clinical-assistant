@@ -2,7 +2,7 @@
 
 ## Clinical Guidelines Retrieval-Augmented QA Prototype
 
-MediRAG is an evidence-based medical AI assistant that answers clinical questions strictly from official medical guidelines (e.g., WHO, NICE). It uses Two-Stage Hybrid Search (ChromaDB + BM25 + Cross-Encoder Reranking), uses a low-generation-temperature setting (`temperature=0.0`) to reduce response variability, provides exact page citations, and includes native clinical decision calculators.
+MediRAG is a clinical guideline assistant prototype that answers questions using indexed official medical guidelines (e.g., WHO, NICE). It uses Two-Stage Hybrid Search (ChromaDB + BM25 + Cross-Encoder Reranking), uses a low-generation-temperature setting (`temperature=0.0`) to reduce response variability, provides exact page citations, and includes native clinical decision calculators.
 
 ---
 
@@ -36,7 +36,7 @@ GROQ_API_KEY=your_groq_api_key_here
 
 *(Get a free Groq API key from https://console.groq.com/keys)*
 
-### 4. Run the Production Web Application (FastAPI + Modern SPA)
+### 4. Run the FastAPI Web Application and Modern SPA
 
 ```bash
 uvicorn api:app --reload --port 8000
@@ -59,7 +59,7 @@ streamlit run app.py
 ## Key Features
 
 - **Grounding controls:** Attempts to answer using indexed guidelines with source citations; these controls do not eliminate hallucinations or guarantee correct refusals.
-- **Page Citations:** Every clinical claim includes source document name and page number `[Source: filename, Page: page]`.
+- **Page Citations:** Responses are designed to include source document names and page numbers. Citation accuracy must be independently reviewed.
 - **Two-Stage Hybrid Retrieval:** Dense ChromaDB vectors + Sparse BM25 keyword matching + Cross-Encoder precision reranking (`ms-marco-MiniLM-L-6-v2`).
 - **Clinical Decision Support & Expert Suite:**
   - **Comprehensive Patient Case Analyzer & SOAP Synthesis:** Automated evaluation of vitals, KDIGO renal stages, CVD risks, and guideline-supported SOAP clinical notes.
@@ -75,8 +75,8 @@ streamlit run app.py
   - **Acute Emergency Interception:** Immediate detection and ER redirection for life-threatening clinical red flags (ACS, stroke, anaphylaxis).
   - **Medical PII/PHI Redaction:** Automatic stripping of patient emails, phones, SSNs, and IDs before LLM synthesis.
   - **Rate Limiting & File Upload Security:** Sliding window 40 req/min defense, PDF magic byte verification, and path traversal prevention.
-- **Evaluation Dashboard:** Automated benchmark suite assessing Faithfulness, Context Relevance, Hit Rate, Safety Refusal, and Latency.
-- **Docker Ready:** Complete `Dockerfile` and `docker-compose.yml` for containerized production deployment.
+- **Evaluation Dashboard:** Prototype evaluation tools cover faithfulness, context relevance, hit rate, safety refusal behavior, and latency; results require a reviewed benchmark before making performance claims.
+- **Docker Ready:** `Dockerfile` and `docker-compose.yml` support containerized local runs.
 
 ---
 
@@ -88,7 +88,7 @@ streamlit run app.py
 | **2. Answer Grounding** | Strict closed-domain citations with automated numerical fact checking |
 | **3. System Architecture** | Modular `src/` pipeline + 7-Tab Streamlit UI + FastAPI REST backend |
 | **4. Evaluation & Metrics** | Automated RAG Triad Suite measuring Faithfulness, Context Relevance, Recall, Latency |
-| **5. Clinical Safety** | 100% Safety Refusal on out-of-scope queries; Contraindication alerts |
+| **5. Clinical Safety** | Out-of-scope refusal behavior and contraindication alerts are implemented; no clinician-reviewed safety-refusal rate has been established |
 | **6. Clinical Tools** | Integrated BP staging, eGFR renal dosing calculator, CVD risk scoring, DDI Matrix |
 | **7. Containerized Prototype** | Docker containerization, SSE streaming endpoints, in-memory PDF export |
 
@@ -109,7 +109,7 @@ medirag/
 │   ├── config.py          # App settings and environment variables
 │   ├── clinical_tools.py  # BP staging, eGFR, and CVD risk calculators
 │   ├── clinical_expert.py # Case analyzer, DDI matrix, patient leaflet generator
-│   ├── pdf_generator.py   # Medical-grade PDF generation engine (SOAP & Leaflets)
+│   ├── pdf_generator.py   # PDF generation for SOAP notes and patient leaflets
 │   ├── document_loader.py # PDF extraction and cleaning
 │   ├── text_splitter.py   # Medical chunking with boundary preservation
 │   ├── embeddings.py      # HuggingFace normalized embeddings
