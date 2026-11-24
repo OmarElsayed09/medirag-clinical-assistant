@@ -140,3 +140,7 @@ medirag/
 ## Disclaimer
 
 This tool is for educational and reference purposes only, based strictly on indexed medical guidelines. It is not intended as formal medical advice or a substitute for professional clinical judgment.
+
+## Screenshot
+
+![MediRAG educational prototype interface](docs/screenshot.png)
